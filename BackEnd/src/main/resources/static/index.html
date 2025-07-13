@@ -3,9 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>ChatApp Backend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .endpoints {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .endpoint {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-left: 4px solid #007bff;
+        }
+        .method {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .url {
+            font-family: monospace;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
 </head>
 <body>
-    backend chatapp
+    <div class="container">
+        <h1>🚀 ChatApp Backend API</h1>
+        
+        <div class="status">
+            ✅ Backend is running successfully on port 8080
+        </div>
+        
+        <div class="endpoints">
+            <h3>📋 Available Endpoints:</h3>
+            
+            <div class="endpoint">
+                <span class="method">POST</span> 
+                <span class="url">/api/auth/signup</span> - User Registration
+            </div>
+            
+            <div class="endpoint">
+                <span class="method">POST</span> 
+                <span class="url">/api/auth/login</span> - User Login
+            </div>
+            
+            <div class="endpoint">
+                <span class="method">GET</span> 
+                <span class="url">/api/users/profile</span> - Get User Profile (requires JWT)
+            </div>
+            
+            <div class="endpoint">
+                <span class="method">PUT</span> 
+                <span class="url">/api/users/profile</span> - Update User Profile (requires JWT)
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; color: #666;">
+            <p>🔧 Built with Spring Boot 3 + Java 17</p>
+            <p>🔐 JWT Authentication enabled</p>
+            <p>🗄️ PostgreSQL Database connected</p>
+        </div>
+    </div>
 </body>
 </html>

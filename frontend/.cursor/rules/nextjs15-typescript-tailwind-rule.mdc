@@ -154,7 +154,7 @@ This system prompt is designed for generating TypeScript code for the frontend o
 ## ChatApp-Specific Requirements:
 
 1. Reference `D:\TongHop\ChatApp\ChatAppPRD.md` and `D:\TongHop\ChatApp\frontend\FrontendTodoList.md` for project requirements.
-2. Store 10 avatars (`avatar1.jpg` to `avatar10.jpg`) in `/public/avatars`.
+2. Store 10 avatars (`avatar1.png` to `avatar10.jpg`) in `/public/avatars`.
 3. Implement chat UI in `/components/Chat.tsx`:
    - Messages: Left-aligned (others), right-aligned (user), with timestamps and seen checkmarks.
    - File upload: Restrict to .jpg/.png (5MB), .mp4 (50MB); display error for invalid files.

@@ -10,7 +10,7 @@ public interface UserService {
 
     String login(LoginRequest request);
 
-    UserProfileResponse getProfile(String username);
+    UserProfileResponse getProfile(String email);
 
-    UserProfileResponse updateProfile(String username, UpdateProfileRequest request);
+    UserProfileResponse updateProfile(String email, UpdateProfileRequest request);
 }

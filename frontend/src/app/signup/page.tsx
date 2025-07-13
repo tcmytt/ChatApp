@@ -13,16 +13,16 @@ import { Eye, EyeOff, User, Mail, Lock, AlertCircle, CheckCircle } from 'lucide-
 
 // Avatar options
 const AVATAR_OPTIONS = [
-    '/avatars/avatar1.jpg',
-    '/avatars/avatar2.jpg',
-    '/avatars/avatar3.jpg',
-    '/avatars/avatar4.jpg',
-    '/avatars/avatar5.jpg',
-    '/avatars/avatar6.jpg',
-    '/avatars/avatar7.jpg',
-    '/avatars/avatar8.jpg',
-    '/avatars/avatar9.jpg',
-    '/avatars/avatar10.jpg',
+    '/avatars/avatar1.png',
+    '/avatars/avatar2.png',
+    '/avatars/avatar3.png',
+    '/avatars/avatar4.png',
+    '/avatars/avatar5.png',
+    '/avatars/avatar6.png',
+    '/avatars/avatar7.png',
+    '/avatars/avatar8.png',
+    '/avatars/avatar9.png',
+    '/avatars/avatar10.png',
 ];
 
 export default function SignupPage() {
@@ -31,7 +31,7 @@ export default function SignupPage() {
         email: '',
         password: '',
         confirmPassword: '',
-        avatarUrl: '/avatars/avatar1.jpg',
+        avatarUrl: '/avatars/avatar1.png',
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -293,8 +293,8 @@ export default function SignupPage() {
                                             type="button"
                                             onClick={() => handleAvatarSelect(avatar)}
                                             className={`relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${formData.avatarUrl === avatar
-                                                    ? 'border-primary ring-2 ring-primary/20'
-                                                    : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                                                ? 'border-primary ring-2 ring-primary/20'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
                                                 }`}
                                             disabled={isSubmitting}
                                         >

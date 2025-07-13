@@ -17,7 +17,7 @@ This to-do list outlines the tasks for building the frontend of a real-time chat
 
 ## 2. Static Assets
 - [ ] Add 10 avatar images:
-  - Place `avatar1.jpg` to `avatar10.jpg` in `/public/avatars`.
+  - Place `avatar1.png` to `avatar10.jpg` in `/public/avatars`.
   - Optimize images (<100KB each) using Next.js `Image` component for loading.
 
 ## 3. Layout

@@ -22,9 +22,9 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
+            String email = authentication.getName();
 
-            UserProfileResponse profile = userService.getProfile(username);
+            UserProfileResponse profile = userService.getProfile(email);
             return ResponseEntity.ok(ApiResponse.success("Profile retrieved successfully", profile));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -36,9 +36,9 @@ public class UserController {
             @Valid @RequestBody UpdateProfileRequest request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();
+            String email = authentication.getName();
 
-            UserProfileResponse updatedProfile = userService.updateProfile(username, request);
+            UserProfileResponse updatedProfile = userService.updateProfile(email, request);
             return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updatedProfile));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));

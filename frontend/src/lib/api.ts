@@ -73,13 +73,13 @@ api.interceptors.response.use(
 
 // Auth API functions
 export const authApi = {
-    // Login
+    // Login with email
     login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
         const response = await api.post<ApiResponse<AuthResponse>>('/api/auth/login', data);
         return response.data;
     },
 
-    // Signup
+    // Signup with username and email
     signup: async (data: SignupRequest): Promise<ApiResponse<User>> => {
         const response = await api.post<ApiResponse<User>>('/api/auth/signup', data);
         return response.data;

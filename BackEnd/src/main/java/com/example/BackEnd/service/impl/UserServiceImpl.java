@@ -71,8 +71,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserProfileResponse getProfile(String username) {
-        Users user = usersRepository.findByUsername(username)
+    public UserProfileResponse getProfile(String email) {
+        Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         return new UserProfileResponse(
@@ -84,8 +84,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserProfileResponse updateProfile(String username, UpdateProfileRequest request) {
-        Users user = usersRepository.findByUsername(username)
+    public UserProfileResponse updateProfile(String email, UpdateProfileRequest request) {
+        Users user = usersRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Update username if provided
