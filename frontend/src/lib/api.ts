@@ -101,23 +101,60 @@ export const userApi = {
     },
 };
 
-// Room API functions (placeholder for future implementation)
+// Room API functions
+export interface CreateRoomRequest {
+    name: string;
+    password?: string;
+    maxMembers: number;
+}
+
+export interface JoinRoomRequest {
+    code: string;
+    password?: string;
+}
+
+export interface Room {
+    id: number;
+    name: string;
+    code: string;
+    maxMembers: number;
+    creatorUsername: string;
+    memberCount: number;
+}
+
+export interface RoomSearchResponse {
+    rooms: Room[];
+    page: number;
+    size: number;
+    totalElements: number;
+}
+
 export const roomApi = {
     // Create room
-    createRoom: async (data: any): Promise<ApiResponse<any>> => {
-        const response = await api.post<ApiResponse<any>>('/api/rooms/create', data);
+    createRoom: async (data: CreateRoomRequest): Promise<ApiResponse<Room>> => {
+        const response = await api.post<ApiResponse<Room>>('/api/rooms/create', data);
         return response.data;
     },
-
     // Join room
-    joinRoom: async (data: any): Promise<ApiResponse<any>> => {
-        const response = await api.post<ApiResponse<any>>('/api/rooms/join', data);
+    joinRoom: async (data: JoinRoomRequest): Promise<ApiResponse<Room>> => {
+        const response = await api.post<ApiResponse<Room>>('/api/rooms/join', data);
         return response.data;
     },
-
     // Search rooms
-    searchRooms: async (params: any): Promise<ApiResponse<any>> => {
-        const response = await api.get<ApiResponse<any>>('/api/rooms/search', { params });
+    searchRooms: async (query: string, page = 0, size = 10): Promise<ApiResponse<RoomSearchResponse>> => {
+        const response = await api.get<ApiResponse<RoomSearchResponse>>('/api/rooms/search', {
+            params: { query, page, size },
+        });
+        return response.data;
+    },
+    // Delete room
+    deleteRoom: async (roomId: number): Promise<ApiResponse<null>> => {
+        const response = await api.delete<ApiResponse<null>>(`/api/rooms/delete?roomId=${roomId}`);
+        return response.data;
+    },
+    // Kick member
+    kickMember: async (roomId: number, userId: number): Promise<ApiResponse<null>> => {
+        const response = await api.post<ApiResponse<null>>(`/api/rooms/kick?roomId=${roomId}&userId=${userId}`);
         return response.data;
     },
 };
