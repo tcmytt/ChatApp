@@ -1,6 +1,7 @@
 package com.example.BackEnd.controller;
 
 import com.example.BackEnd.dto.*;
+import com.example.BackEnd.dto.RoomMemberResponse;
 import com.example.BackEnd.service.RoomService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -68,6 +71,39 @@ public class RoomController {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
             roomService.kickMember(email, roomId, userId);
             return ResponseEntity.ok(ApiResponse.success("User kicked successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{roomId}/members")
+    public ResponseEntity<ApiResponse<List<RoomMemberResponse>>> getRoomMembers(@PathVariable Long roomId) {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            List<RoomMemberResponse> members = roomService.getRoomMembers(email, roomId);
+            return ResponseEntity.ok(ApiResponse.success("Room members fetched successfully", members));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{roomId}")
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoomById(@PathVariable Long roomId) {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            RoomResponse room = roomService.getRoomById(email, roomId);
+            return ResponseEntity.ok(ApiResponse.success("Room details fetched successfully", room));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getUserRooms() {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            List<RoomResponse> rooms = roomService.getUserRooms(email);
+            return ResponseEntity.ok(ApiResponse.success("User rooms fetched successfully", rooms));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }

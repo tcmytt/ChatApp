@@ -1,6 +1,7 @@
 package com.example.BackEnd.service.impl;
 
 import com.example.BackEnd.dto.*;
+import com.example.BackEnd.dto.RoomMemberResponse;
 import com.example.BackEnd.entity.RoomMembers;
 import com.example.BackEnd.entity.RoomMembers.MemberRole;
 import com.example.BackEnd.entity.Rooms;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -33,6 +35,8 @@ public class RoomServiceImpl implements RoomService {
     private RoomMembersRepository roomMembersRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired(required = false)
+    private SimpUserRegistry simpUserRegistry;
 
     private static final String CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
@@ -78,7 +82,8 @@ public class RoomServiceImpl implements RoomService {
                 savedRoom.getCode(),
                 savedRoom.getMaxMembers(),
                 creator.getUsername(),
-                1);
+                1,
+                savedRoom.getPasswordHash() != null && !savedRoom.getPasswordHash().isBlank());
     }
 
     @Override
@@ -120,7 +125,8 @@ public class RoomServiceImpl implements RoomService {
                 room.getCode(),
                 room.getMaxMembers(),
                 room.getCreator().getUsername(),
-                memberCount.intValue() + 1);
+                memberCount.intValue() + 1,
+                room.getPasswordHash() != null && !room.getPasswordHash().isBlank());
     }
 
     @Override
@@ -147,7 +153,8 @@ public class RoomServiceImpl implements RoomService {
                 room.getCode(),
                 room.getMaxMembers(),
                 room.getCreator().getUsername(),
-                room.getRoomMembers() != null ? room.getRoomMembers().size() : 0)).collect(Collectors.toList());
+                room.getRoomMembers() != null ? room.getRoomMembers().size() : 0,
+                room.getPasswordHash() != null && !room.getPasswordHash().isBlank())).collect(Collectors.toList());
         return new RoomSearchResponse(rooms, page, size, roomsPage.getTotalElements());
     }
 
@@ -167,5 +174,85 @@ public class RoomServiceImpl implements RoomService {
         RoomMembers member = roomMembersRepository.findByRoomIdAndUserId(roomId, userIdToKick)
                 .orElseThrow(() -> new IllegalArgumentException("User is not a member of the room"));
         roomMembersRepository.delete(member);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomMemberResponse> getRoomMembers(String userEmail, Long roomId) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Rooms room = roomsRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+        if (!roomMembersRepository.existsByRoomIdAndUserId(roomId, user.getId())) {
+            throw new IllegalArgumentException("User is not a member of the room");
+        }
+        var members = roomMembersRepository.findByRoomId(roomId);
+        return members.stream().map(m -> {
+            Users u = m.getUser();
+            String role = m.getRole().name().toLowerCase();
+            boolean online = false;
+            if (simpUserRegistry != null) {
+                online = simpUserRegistry.getUsers().stream()
+                        .anyMatch(su -> su.getName().equals(u.getEmail()));
+            }
+            return new RoomMemberResponse(
+                    u.getId(),
+                    u.getUsername(),
+                    u.getAvatarUrl(),
+                    role,
+                    online);
+        }).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoomResponse getRoomById(String userEmail, Long roomId) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Rooms room = roomsRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("Room not found"));
+
+        // Check if user is a member of the room
+        if (!roomMembersRepository.existsByRoomIdAndUserId(roomId, user.getId())) {
+            throw new IllegalArgumentException("User is not a member of the room");
+        }
+
+        Long memberCount = roomsRepository.countMembersByRoomId(roomId);
+
+        return new RoomResponse(
+                room.getId(),
+                room.getName(),
+                room.getCode(),
+                room.getMaxMembers(),
+                room.getCreator().getUsername(),
+                memberCount.intValue(),
+                room.getPasswordHash() != null && !room.getPasswordHash().isBlank());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoomResponse> getUserRooms(String userEmail) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Lấy tất cả phòng mà user đã tham gia (bao gồm phòng tự tạo và phòng đã join)
+        List<RoomMembers> userRoomMembers = roomMembersRepository.findByUserId(user.getId());
+
+        // Sắp xếp theo thời gian tham gia mới nhất
+        userRoomMembers.sort((rm1, rm2) -> rm2.getJoinedAt().compareTo(rm1.getJoinedAt()));
+
+        return userRoomMembers.stream().map(rm -> {
+            Rooms room = rm.getRoom();
+            Long memberCount = roomsRepository.countMembersByRoomId(room.getId());
+
+            return new RoomResponse(
+                    room.getId(),
+                    room.getName(),
+                    room.getCode(),
+                    room.getMaxMembers(),
+                    room.getCreator().getUsername(),
+                    memberCount.intValue(),
+                    room.getPasswordHash() != null && !room.getPasswordHash().isBlank());
+        }).toList();
     }
 }

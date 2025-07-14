@@ -46,7 +46,7 @@ export default function JoinRoomPage() {
             if (res.result === 'SUCCESS' && res.data) {
                 setSuccess('Joined room! Redirecting...');
                 setTimeout(() => {
-                    if (res.data) router.push(`/chat/${res.data.code}`);
+                    if (res.data) router.push(`/chat/${res.data.id}`);
                 }, 1200);
             } else {
                 setErrors({ general: res.message || 'Join room failed' });

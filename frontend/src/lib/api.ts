@@ -120,6 +120,7 @@ export interface Room {
     maxMembers: number;
     creatorUsername: string;
     memberCount: number;
+    hasPassword: boolean;
 }
 
 export interface RoomSearchResponse {
@@ -147,6 +148,11 @@ export const roomApi = {
         });
         return response.data;
     },
+    // Get user's joined rooms
+    getUserRooms: async (): Promise<ApiResponse<Room[]>> => {
+        const response = await api.get<ApiResponse<Room[]>>('/api/rooms/user');
+        return response.data;
+    },
     // Delete room
     deleteRoom: async (roomId: number): Promise<ApiResponse<null>> => {
         const response = await api.delete<ApiResponse<null>>(`/api/rooms/delete?roomId=${roomId}`);
@@ -170,6 +176,66 @@ export const uploadApi = {
                 'Content-Type': 'multipart/form-data',
             },
         });
+        return response.data;
+    },
+};
+
+// Chat message types
+export interface ChatMessage {
+    id: number;
+    roomId: number;
+    userId: number;
+    username: string;
+    avatarUrl: string;
+    content: string;
+    contentType: 'text' | 'image' | 'video';
+    timestamp: string;
+    seenBy: number[];
+}
+
+export interface ChatHistoryResponse {
+    messages: ChatMessage[];
+    page: number;
+    size: number;
+    totalElements: number;
+}
+
+export const chatApi = {
+    // Lấy lịch sử tin nhắn
+    getMessages: async (roomId: number, page = 0, size = 30): Promise<ApiResponse<ChatHistoryResponse>> => {
+        const response = await api.get<ApiResponse<ChatHistoryResponse>>(`/api/rooms/${roomId}/messages`, {
+            params: { page, size },
+        });
+        return response.data;
+    },
+    // Xóa tin nhắn
+    deleteMessage: async (roomId: number, messageId: number): Promise<ApiResponse<null>> => {
+        const response = await api.delete<ApiResponse<null>>(`/api/rooms/${roomId}/messages/${messageId}/delete`);
+        return response.data;
+    },
+    // Upload file
+    uploadFile: async (file: File): Promise<ApiResponse<{ url: string }>> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post<ApiResponse<{ url: string }>>('/api/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+};
+
+// Room member API
+export interface RoomMember {
+    userId: number;
+    username: string;
+    avatarUrl: string;
+    role: 'creator' | 'admin' | 'member';
+    online: boolean;
+}
+
+export const memberApi = {
+    getRoomMembers: async (roomId: number): Promise<ApiResponse<RoomMember[]>> => {
+        const response = await api.get<ApiResponse<RoomMember[]>>(`/api/rooms/${roomId}/members`);
         return response.data;
     },
 };

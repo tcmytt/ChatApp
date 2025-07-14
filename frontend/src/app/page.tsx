@@ -1,9 +1,23 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, Users, Shield, Zap, ArrowRight, Star } from 'lucide-react';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { token, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && token) {
+      router.replace('/rooms');
+    }
+  }, [token, isLoading, router]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900">
       {/* Hero Section */}

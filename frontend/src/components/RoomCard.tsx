@@ -1,7 +1,8 @@
 import { Room } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, User, Key } from 'lucide-react';
+import { Users, User, Key, Copy } from 'lucide-react';
+import { useState } from 'react';
 
 interface RoomCardProps {
     room: Room;
@@ -10,6 +11,19 @@ interface RoomCardProps {
 }
 
 export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyCode = async (e: React.MouseEvent) => {
+        e.stopPropagation(); // Ngăn không cho trigger onClick của card
+        try {
+            await navigator.clipboard.writeText(room.code);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000); // Reset sau 2 giây
+        } catch (err) {
+            console.error('Failed to copy code:', err);
+        }
+    };
+
     return (
         <Card
             className={`transition-shadow hover:shadow-lg cursor-pointer border-2 ${isJoined ? 'border-blue-500' : 'border-transparent'}`}
@@ -20,10 +34,21 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
                     <div className="font-bold text-lg truncate">
                         {room.name}
                     </div>
-                    <Badge variant="secondary" className="ml-2">
+                    <Badge
+                        variant="secondary"
+                        className="ml-2 cursor-pointer hover:bg-secondary/80 transition-colors flex items-center gap-1"
+                        onClick={handleCopyCode}
+                        title="Click to copy room code"
+                    >
                         {room.code}
+                        <Copy className="h-3 w-3" />
                     </Badge>
                 </div>
+                {copied && (
+                    <div className="text-xs text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
+                        Code copied to clipboard!
+                    </div>
+                )}
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
@@ -33,10 +58,10 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
                         <User className="h-4 w-4" />
                         {room.creatorUsername}
                     </span>
-                    {room.maxMembers > 1 && (
+                    {room.hasPassword && (
                         <span className="flex items-center gap-1">
                             <Key className="h-4 w-4" />
-                            {room.maxMembers > 1 ? 'Private' : 'Public'}
+                            Private
                         </span>
                     )}
                 </div>

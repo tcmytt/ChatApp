@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/AuthProvider';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,7 @@ export default function LoginPage() {
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { login, error: authError, clearError } = useAuth();
+    const { login, error: authError, clearError, user, isLoading } = useAuthContext();
     const router = useRouter();
 
     // Validation rules
@@ -59,7 +60,7 @@ export default function LoginPage() {
             const result = await login(formData);
 
             if (result.success) {
-                router.push('/rooms');
+                // router.push('/rooms'); // Xoá router.push('/rooms') trong handleSubmit
             } else {
                 setErrors({ general: result.message || 'Login failed' });
             }
@@ -79,6 +80,12 @@ export default function LoginPage() {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            router.replace('/rooms');
+        }
+    }, [user, isLoading, router]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-blue-900 p-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthContext } from '@/components/AuthProvider';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export function Header() {
-    const { user, logout, isLoading } = useAuth();
+    const { user, logout, isLoading } = useAuthContext();
     const { theme, toggleTheme } = useTheme();
     const router = useRouter();
 
@@ -51,6 +51,12 @@ export function Header() {
                                 Rooms
                             </Link>
                             <Link
+                                href="/rooms/user"
+                                className="text-sm font-medium transition-colors hover:text-primary"
+                            >
+                                Your Rooms
+                            </Link>
+                            <Link
                                 href="/rooms/create"
                                 className="text-sm font-medium transition-colors hover:text-primary"
                             >
@@ -84,7 +90,7 @@ export function Header() {
                     </Button>
 
                     {/* User menu */}
-                    {user ? (
+                    {isLoading ? null : user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
