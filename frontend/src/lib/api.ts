@@ -183,6 +183,11 @@ export const roomApi = {
         });
         return response.data;
     },
+    // Get room by id
+    getRoomById: async (roomId: number): Promise<ApiResponse<Room>> => {
+        const response = await api.get<ApiResponse<Room>>(`/api/rooms/${roomId}`);
+        return response.data;
+    },
 };
 
 // File upload API (placeholder)

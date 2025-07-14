@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Paperclip, Send, Trash2, Image as ImageIcon, Video as VideoIcon, Eye, Loader2 } from "lucide-react";
+import { Paperclip, Send, Trash2, Image as ImageIcon, Video as VideoIcon, Eye, Loader2, Copy } from "lucide-react";
 import Image from "next/image";
+import { roomApi } from "@/lib/api";
 
 interface ChatProps {
     roomId: number;
@@ -30,6 +31,8 @@ export function Chat({ roomId, isOwner }: ChatProps) {
     const chatRef = useRef<HTMLDivElement>(null);
     const [ws, setWs] = useState<any>(null);
     const [token, setToken] = useState<string>("");
+    const [roomInfo, setRoomInfo] = useState<{ name: string; code: string } | null>(null);
+    const [copying, setCopying] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -38,6 +41,22 @@ export function Chat({ roomId, isOwner }: ChatProps) {
             setWs(useWebSocket(t));
         }
     }, []);
+
+    // Lấy thông tin phòng khi vào chat
+    useEffect(() => {
+        roomApi.getRoomById(roomId).then(res => {
+            if (res.result === "SUCCESS" && res.data) {
+                setRoomInfo({ name: res.data.name, code: res.data.code });
+            }
+        });
+    }, [roomId]);
+
+    const handleCopyCode = async () => {
+        if (!roomInfo) return;
+        await navigator.clipboard.writeText(roomInfo.code);
+        setCopying(true);
+        setTimeout(() => setCopying(false), 1500);
+    };
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -236,6 +255,26 @@ export function Chat({ roomId, isOwner }: ChatProps) {
 
     return (
         <div className="flex flex-col h-full max-h-[80vh]">
+            {/* Room Info Header */}
+            {roomInfo && (
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 px-4 pt-4 pb-2">
+                    <div className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(236,72,153,0.7)]">
+                        {roomInfo.name}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-mono text-muted-foreground">Room code:</span>
+                        <span
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold cursor-pointer select-all hover:scale-105 transition-transform shadow"
+                            title="Click to copy room code"
+                            onClick={handleCopyCode}
+                        >
+                            {roomInfo.code}
+                            <Copy className="h-4 w-4 ml-1" />
+                        </span>
+                        {copying && <span className="text-xs text-green-400 ml-2">Copied!</span>}
+                    </div>
+                </div>
+            )}
             <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-gray-900 rounded-t-xl" ref={chatRef}>
                 {loading && <div className="text-center text-muted-foreground"><Loader2 className="animate-spin inline-block mr-2" />Loading...</div>}
                 {hasMore && !loading && (
