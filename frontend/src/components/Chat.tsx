@@ -28,7 +28,18 @@ export function Chat({ roomId, isOwner }: ChatProps) {
     const [sending, setSending] = useState(false);
     const [uploading, setUploading] = useState(false);
     const chatRef = useRef<HTMLDivElement>(null);
-    const ws = useWebSocket(localStorage.getItem("authToken") || "");
+    const [ws, setWs] = useState<any>(null);
+    const [token, setToken] = useState<string>("");
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const t = localStorage.getItem("authToken") || "";
+            setToken(t);
+            setWs(useWebSocket(t));
+        }
+    }, []);
+
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
     // Fetch initial messages
     useEffect(() => {
@@ -49,21 +60,37 @@ export function Chat({ roomId, isOwner }: ChatProps) {
 
     // WebSocket: subscribe to new messages
     useEffect(() => {
-        if (!ws || !ws.isConnected || !ws.subscribeToRoom) return;
+        if (!ws || typeof ws.isConnected !== 'function' || typeof ws.subscribeToRoom !== 'function') return;
         if (!ws.isConnected()) return;
         ws.subscribeToRoom(roomId.toString(), (msg: ChatMessage) => {
             setMessages(prev => {
+                // Nếu đã có optimistic message (id là Date.now()), thay thế bằng message thật
+                const optimisticIdx = prev.findIndex(m =>
+                    m.id.toString().length === 13 && // id tạm thời là Date.now()
+                    m.userId === msg.userId &&
+                    m.content === msg.content &&
+                    m.contentType === msg.contentType
+                );
+                if (optimisticIdx !== -1) {
+                    const updated = [...prev];
+                    updated[optimisticIdx] = msg;
+                    return updated;
+                }
+                // Nếu đã có message id thật, cập nhật lại
                 const idx = prev.findIndex(m => m.id === msg.id);
                 if (idx !== -1) {
                     const updated = [...prev];
                     updated[idx] = msg;
                     return updated;
                 }
+                // Nếu chưa có, thêm mới
                 return [...prev, msg];
             });
         });
-        return () => ws.unsubscribe && ws.unsubscribe(`room-${roomId}`);
-    }, [ws, roomId, ws.isConnected]);
+        return () => {
+            if (ws && typeof ws.unsubscribe === 'function') ws.unsubscribe(`room-${roomId}`);
+        };
+    }, [ws, roomId, ws && typeof ws.isConnected === 'function' && ws.isConnected()]);
 
     // Scroll to bottom khi có tin nhắn mới
     useEffect(() => {
@@ -74,52 +101,37 @@ export function Chat({ roomId, isOwner }: ChatProps) {
 
     // Gửi tin nhắn
     const handleSend = async () => {
-        if (!input.trim() && !file) return;
+        if (!input.trim()) return;
         setSending(true);
         let content = input.trim();
-        let contentType: "text" | "image" | "video" = "text";
-        if (file) {
-            setUploading(true);
-            const ext = file.name.split(".").pop()?.toLowerCase();
-            if (["jpg", "jpeg", "png"].includes(ext || "")) contentType = "image";
-            else if (["mp4"].includes(ext || "")) contentType = "video";
-            else {
-                setError("Only .jpg, .png, .mp4 allowed");
-                setUploading(false);
-                setSending(false);
-                return;
-            }
-            // Validate size
-            if ((contentType === "image" && file.size > 5 * 1024 * 1024) || (contentType === "video" && file.size > 50 * 1024 * 1024)) {
-                setError("File too large");
-                setUploading(false);
-                setSending(false);
-                return;
-            }
-            const res = await chatApi.uploadFile(file);
-            if (res.result === "SUCCESS" && res.data) {
-                content = res.data.url;
-            } else {
-                setError(res.message || "Upload failed");
-                setUploading(false);
-                setSending(false);
-                return;
-            }
-            setUploading(false);
-        }
-        ws.sendMessage(
-            String(roomId),
-            {
+        let contentType: "text" = "text";
+        if (ws && typeof ws.sendMessage === 'function') {
+            ws.sendMessage(
+                String(roomId),
+                {
+                    roomId: Number(roomId),
+                    content,
+                    contentType,
+                    userId: user?.id ?? 0,
+                    username: user?.username ?? '',
+                    avatarUrl: user?.avatarUrl ?? ''
+                }
+            );
+            // Optimistic UI: push message tạm thời
+            const optimisticMsg = {
+                id: Date.now(),
                 roomId: Number(roomId),
-                content,
-                contentType,
                 userId: user?.id ?? 0,
                 username: user?.username ?? '',
-                avatarUrl: user?.avatarUrl ?? ''
-            }
-        );
+                avatarUrl: user?.avatarUrl ?? '',
+                content,
+                contentType,
+                timestamp: new Date().toISOString(),
+                seenBy: [user?.id ?? 0]
+            };
+            setMessages(prev => [...prev, optimisticMsg]);
+        }
         setInput("");
-        setFile(null);
         setSending(false);
     };
 
@@ -145,13 +157,82 @@ export function Chat({ roomId, isOwner }: ChatProps) {
 
     // Đánh dấu đã đọc khi message hiển thị
     useEffect(() => {
-        if (!ws || !ws.markMessageAsSeen || !user) return;
+        if (!ws || typeof ws.markMessageAsSeen !== 'function' || !user) return;
         messages.forEach(msg => {
             if (!msg.seenBy.includes(user.id)) {
                 ws.markMessageAsSeen(String(roomId), msg.id);
             }
         });
     }, [messages, ws, user, roomId]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0] || null;
+        setFile(selectedFile);
+        if (selectedFile && !sending && !uploading) {
+            setInput(""); // clear text input nếu có
+            // Gửi luôn file
+            await handleSendFile(selectedFile);
+        }
+    };
+
+    // Hàm riêng để gửi file (tách khỏi handleSend để tái sử dụng)
+    const handleSendFile = async (selectedFile: File) => {
+        setSending(true);
+        let contentType: "image" | "video" = "image";
+        const ext = selectedFile.name.split(".").pop()?.toLowerCase();
+        if (["jpg", "jpeg", "png"].includes(ext || "")) contentType = "image";
+        else if (["mp4"].includes(ext || "")) contentType = "video";
+        else {
+            setError("Only .jpg, .png, .mp4 allowed");
+            setSending(false);
+            return;
+        }
+        if ((contentType === "image" && selectedFile.size > 5 * 1024 * 1024) || (contentType === "video" && selectedFile.size > 50 * 1024 * 1024)) {
+            setError("File too large");
+            setSending(false);
+            return;
+        }
+        setUploading(true);
+        const res = await chatApi.uploadFile(selectedFile);
+        if (res.result === "SUCCESS" && res.data) {
+            const content = res.data.url;
+            if (ws && typeof ws.sendMessage === 'function') {
+                ws.sendMessage(
+                    String(roomId),
+                    {
+                        roomId: Number(roomId),
+                        content,
+                        contentType,
+                        userId: user?.id ?? 0,
+                        username: user?.username ?? '',
+                        avatarUrl: user?.avatarUrl ?? ''
+                    }
+                );
+                // Optimistic UI: push message tạm thời
+                const optimisticMsg = {
+                    id: Date.now(),
+                    roomId: Number(roomId),
+                    userId: user?.id ?? 0,
+                    username: user?.username ?? '',
+                    avatarUrl: user?.avatarUrl ?? '',
+                    content,
+                    contentType,
+                    timestamp: new Date().toISOString(),
+                    seenBy: [user?.id ?? 0]
+                };
+                setMessages(prev => [...prev, optimisticMsg]);
+            }
+        } else {
+            setError(res.message || "Upload failed");
+            setUploading(false);
+            setSending(false);
+            setFile(null);
+            return;
+        }
+        setUploading(false);
+        setSending(false);
+        setFile(null);
+    };
 
     return (
         <div className="flex flex-col h-full max-h-[80vh]">
@@ -173,8 +254,22 @@ export function Chat({ roomId, isOwner }: ChatProps) {
                                 {isOwner && <Button size="icon" variant="ghost" onClick={() => handleDelete(msg)}><Trash2 className="h-4 w-4 text-red-500" /></Button>}
                             </div>
                             {msg.contentType === "text" && <div className="break-words whitespace-pre-wrap">{msg.content}</div>}
-                            {msg.contentType === "image" && <Image src={msg.content} alt="img" width={200} height={200} className="rounded-lg mt-2" />}
-                            {msg.contentType === "video" && <video src={msg.content} controls className="rounded-lg mt-2 max-w-full" />}
+                            {msg.contentType === "image" && (
+                                <img
+                                    src={msg.content.startsWith('http') ? msg.content : API_BASE_URL + msg.content}
+                                    alt="img"
+                                    className="rounded-lg mt-2 max-w-[320px] max-h-[320px] object-contain border"
+                                    style={{ width: '100%', height: 'auto' }}
+                                />
+                            )}
+                            {msg.contentType === "video" && (
+                                <video
+                                    controls
+                                    src={msg.content.startsWith('http') ? msg.content : API_BASE_URL + msg.content}
+                                    className="rounded-lg mt-2 max-w-[400px] max-h-[320px] object-contain border"
+                                    style={{ width: '100%', height: 'auto' }}
+                                />
+                            )}
                         </div>
                     </div>
                 ))}
@@ -192,7 +287,7 @@ export function Chat({ roomId, isOwner }: ChatProps) {
                     accept="image/jpeg,image/png,video/mp4"
                     style={{ display: 'none' }}
                     id="file-upload"
-                    onChange={e => setFile(e.target.files?.[0] || null)}
+                    onChange={handleFileChange}
                 />
                 <label htmlFor="file-upload">
                     <Button variant="ghost" size="icon" asChild>

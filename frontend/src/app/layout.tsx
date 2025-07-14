@@ -55,6 +55,11 @@ export default function RootLayout({
               {children}
             </main>
           </div>
+          <footer className="w-full py-6 mt-8 text-center">
+            <div className="text-base md:text-lg font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(236,72,153,0.7)]">
+              Developed by Nguyễn Vũ Hiệp &bull; Phone: <a href="tel:0789388656" className="underline hover:text-blue-400 transition-colors">0789388656</a>
+            </div>
+          </footer>
         </AuthProvider>
       </body>
     </html>

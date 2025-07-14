@@ -201,7 +201,7 @@ export default function ProfilePage() {
         <div className="container mx-auto px-4 py-8 max-w-2xl">
             {/* Header */}
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(236,72,153,0.7)] hover:drop-shadow-[0_0_16px_rgba(139,92,246,0.8)] transition-all duration-300">
                     Profile Settings
                 </h1>
                 <p className="text-muted-foreground mt-2">

@@ -133,7 +133,7 @@ export default function RoomsPage() {
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl xl:max-w-7xl">
-            <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">Rooms</h1>
+            <h1 className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(236,72,153,0.7)] hover:drop-shadow-[0_0_16px_rgba(139,92,246,0.8)] transition-all duration-300">Rooms</h1>
             {/* Search */}
             <form onSubmit={handleSearch} className="flex gap-2 mb-6">
                 <Input

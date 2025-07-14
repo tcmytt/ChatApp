@@ -73,7 +73,9 @@ export default function CreateRoomPage() {
             <div className="w-full max-w-md">
                 <Card className="border-0 shadow-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
                     <CardHeader>
-                        <CardTitle>Create a Room</CardTitle>
+                        <CardTitle className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(236,72,153,0.7)] hover:drop-shadow-[0_0_16px_rgba(139,92,246,0.8)] transition-all duration-300">
+                            Create a Room
+                        </CardTitle>
                         <CardDescription>Set up a new chat room</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
