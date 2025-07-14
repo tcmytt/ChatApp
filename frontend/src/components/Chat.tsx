@@ -49,23 +49,21 @@ export function Chat({ roomId, isOwner }: ChatProps) {
 
     // WebSocket: subscribe to new messages
     useEffect(() => {
-        if (!ws || !ws.connect) return;
-        ws.connect().then(() => {
-            ws.subscribeToRoom(roomId.toString(), (msg: ChatMessage) => {
-                setMessages(prev => {
-                    // Nếu là update seenBy thì update message, nếu là mới thì push
-                    const idx = prev.findIndex(m => m.id === msg.id);
-                    if (idx !== -1) {
-                        const updated = [...prev];
-                        updated[idx] = msg;
-                        return updated;
-                    }
-                    return [...prev, msg];
-                });
+        if (!ws || !ws.isConnected || !ws.subscribeToRoom) return;
+        if (!ws.isConnected()) return;
+        ws.subscribeToRoom(roomId.toString(), (msg: ChatMessage) => {
+            setMessages(prev => {
+                const idx = prev.findIndex(m => m.id === msg.id);
+                if (idx !== -1) {
+                    const updated = [...prev];
+                    updated[idx] = msg;
+                    return updated;
+                }
+                return [...prev, msg];
             });
         });
-        return () => ws.unsubscribe(`room-${roomId}`);
-    }, [ws, roomId]);
+        return () => ws.unsubscribe && ws.unsubscribe(`room-${roomId}`);
+    }, [ws, roomId, ws.isConnected]);
 
     // Scroll to bottom khi có tin nhắn mới
     useEffect(() => {
@@ -109,7 +107,17 @@ export function Chat({ roomId, isOwner }: ChatProps) {
             }
             setUploading(false);
         }
-        ws.sendMessage(roomId.toString(), { roomId, content, contentType, userId: user?.id, username: user?.username, avatarUrl: user?.avatarUrl });
+        ws.sendMessage(
+            String(roomId),
+            {
+                roomId: Number(roomId),
+                content,
+                contentType,
+                userId: user?.id ?? 0,
+                username: user?.username ?? '',
+                avatarUrl: user?.avatarUrl ?? ''
+            }
+        );
         setInput("");
         setFile(null);
         setSending(false);
@@ -140,7 +148,7 @@ export function Chat({ roomId, isOwner }: ChatProps) {
         if (!ws || !ws.markMessageAsSeen || !user) return;
         messages.forEach(msg => {
             if (!msg.seenBy.includes(user.id)) {
-                ws.markMessageAsSeen(roomId, msg.id);
+                ws.markMessageAsSeen(String(roomId), msg.id);
             }
         });
     }, [messages, ws, user, roomId]);
@@ -161,7 +169,7 @@ export function Chat({ roomId, isOwner }: ChatProps) {
                                 <Image src={msg.avatarUrl} alt={msg.username} width={24} height={24} className="rounded-full" />
                                 <span className="font-semibold text-xs">{msg.username}</span>
                                 <span className="text-xs text-muted-foreground">{new Date(msg.timestamp).toLocaleTimeString()}</span>
-                                {msg.seenBy.length > 1 && <Eye className="h-3 w-3 ml-1 text-green-400" title="Seen" />}
+                                {msg.seenBy.length > 1 && <Eye className="h-3 w-3 ml-1 text-green-400" /* title="Seen" */ />}
                                 {isOwner && <Button size="icon" variant="ghost" onClick={() => handleDelete(msg)}><Trash2 className="h-4 w-4 text-red-500" /></Button>}
                             </div>
                             {msg.contentType === "text" && <div className="break-words whitespace-pre-wrap">{msg.content}</div>}

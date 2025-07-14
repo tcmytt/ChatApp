@@ -57,6 +57,12 @@ export function Header() {
                                 Your Rooms
                             </Link>
                             <Link
+                                href="/rooms/own"
+                                className="text-sm font-medium transition-colors hover:text-primary"
+                            >
+                                Own Rooms
+                            </Link>
+                            <Link
                                 href="/rooms/create"
                                 className="text-sm font-medium transition-colors hover:text-primary"
                             >

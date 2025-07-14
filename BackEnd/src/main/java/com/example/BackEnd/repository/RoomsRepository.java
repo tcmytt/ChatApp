@@ -25,4 +25,7 @@ public interface RoomsRepository extends JpaRepository<Rooms, Long> {
 
     @Query("SELECT r FROM Rooms r JOIN r.roomMembers rm WHERE rm.user.id = :userId")
     Page<Rooms> findRoomsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    // Thêm method mới
+    Page<Rooms> findByCreatorId(Long creatorId, Pageable pageable);
 }

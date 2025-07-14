@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { RoomCard } from '@/components/RoomCard';
 import { ArrowLeft, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function UserRoomsPage() {
     const [personalRooms, setPersonalRooms] = useState<Room[]>([]);
@@ -18,6 +19,7 @@ export default function UserRoomsPage() {
     const [page, setPage] = useState(0);
     const [size] = useState(16);
     const [total, setTotal] = useState(0);
+    const { token, isLoading } = useAuth();
 
     const fetchPersonalRooms = async () => {
         setLoading(true);
@@ -38,8 +40,15 @@ export default function UserRoomsPage() {
     };
 
     useEffect(() => {
+        if (!isLoading && !token) {
+            router.replace('/');
+        }
+    }, [token, isLoading, router]);
+
+    useEffect(() => {
+        if (!token) return;
         fetchPersonalRooms();
-    }, [page, size, filter]);
+    }, [page, size, filter, token]);
 
     const handleRoomClick = (room: Room) => {
         router.push(`/chat/${room.id}`);

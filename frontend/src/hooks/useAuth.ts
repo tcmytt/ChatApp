@@ -85,6 +85,8 @@ export function useAuth(): AuthState & AuthActions {
             if (response.result === 'SUCCESS' && response.data) {
                 const { token } = response.data;
                 localStorage.setItem('authToken', token);
+                // Lưu token vào cookie (7 ngày)
+                document.cookie = `authToken=${token}; path=/; max-age=604800;`;
 
                 setState(prev => ({ ...prev, token, isLoading: true }));
                 await fetchUserProfile(token);
@@ -119,6 +121,8 @@ export function useAuth(): AuthState & AuthActions {
                 if (loginResponse.result === 'SUCCESS' && loginResponse.data) {
                     const { token } = loginResponse.data;
                     localStorage.setItem('authToken', token);
+                    // Lưu token vào cookie (7 ngày)
+                    document.cookie = `authToken=${token}; path=/; max-age=604800;`;
 
                     setState(prev => ({ ...prev, user: response.data, token, isLoading: false }));
                     return { success: true };
@@ -140,6 +144,8 @@ export function useAuth(): AuthState & AuthActions {
     // Logout function
     const logout = useCallback(() => {
         localStorage.removeItem('authToken');
+        // Xóa cookie
+        document.cookie = 'authToken=; Max-Age=0; path=/;';
         setState({
             user: null,
             token: null,

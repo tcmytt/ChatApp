@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { roomApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Key, Hash } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function JoinRoomPage() {
     const [form, setForm] = useState({
@@ -19,6 +20,13 @@ export default function JoinRoomPage() {
     const [success, setSuccess] = useState('');
     const [shake, setShake] = useState(false);
     const router = useRouter();
+    const { token, isLoading } = useAuth();
+
+    useEffect(() => {
+        if (!isLoading && !token) {
+            router.replace('/');
+        }
+    }, [token, isLoading, router]);
 
     const validate = () => {
         const errs: { [key: string]: string } = {};

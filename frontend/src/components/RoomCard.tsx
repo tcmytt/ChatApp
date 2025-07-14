@@ -64,6 +64,11 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
                             Private
                         </span>
                     )}
+                    {room.memberCount >= room.maxMembers && (
+                        <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                            <Badge variant="destructive" className="bg-yellow-400 text-yellow-900 dark:bg-yellow-600 dark:text-white">Full</Badge>
+                        </span>
+                    )}
                 </div>
             </CardContent>
         </Card>

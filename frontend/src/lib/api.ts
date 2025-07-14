@@ -176,6 +176,13 @@ export const roomApi = {
         const response = await api.get<ApiResponse<number[]>>('/api/rooms/user/ids');
         return response.data;
     },
+    // Get user's own rooms (where user is creator)
+    getOwnRooms: async (page = 0, size = 16): Promise<ApiResponse<UserRoomsResponse>> => {
+        const response = await api.get<ApiResponse<UserRoomsResponse>>('/api/rooms/own', {
+            params: { page, size },
+        });
+        return response.data;
+    },
 };
 
 // File upload API (placeholder)

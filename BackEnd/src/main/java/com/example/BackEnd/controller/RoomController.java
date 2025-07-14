@@ -121,4 +121,17 @@ public class RoomController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/own")
+    public ResponseEntity<ApiResponse<RoomSearchResponse>> getOwnRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "16") int size) {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            RoomSearchResponse result = roomService.getOwnRooms(email, page, size);
+            return ResponseEntity.ok(ApiResponse.success("User own rooms fetched successfully", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }

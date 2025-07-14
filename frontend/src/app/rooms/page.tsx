@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { RoomCard } from '@/components/RoomCard';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RoomsPage() {
     const [query, setQuery] = useState('');
@@ -39,6 +40,7 @@ export default function RoomsPage() {
     const [joining, setJoining] = useState(false);
 
     const router = useRouter();
+    const { token, isLoading } = useAuth();
 
     const fetchRooms = async () => {
         setLoading(true);
@@ -70,9 +72,16 @@ export default function RoomsPage() {
     };
 
     useEffect(() => {
+        if (!isLoading && !token) {
+            router.replace('/');
+        }
+    }, [token, isLoading, router]);
+
+    useEffect(() => {
+        if (!token) return;
         fetchRooms();
         fetchUserRoomIds();
-    }, [query, page]);
+    }, [query, page, token]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

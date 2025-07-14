@@ -267,4 +267,26 @@ public class RoomServiceImpl implements RoomService {
         List<RoomMembers> userRoomMembers = roomMembersRepository.findByUserId(user.getId());
         return userRoomMembers.stream().map(rm -> rm.getRoom().getId()).toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RoomSearchResponse getOwnRooms(String userEmail, int page, int size) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        var pageable = org.springframework.data.domain.PageRequest.of(page, size,
+                org.springframework.data.domain.Sort.by("id").descending());
+        var roomsPage = roomsRepository.findByCreatorId(user.getId(), pageable);
+        List<RoomResponse> rooms = roomsPage.getContent().stream().map(room -> {
+            Long memberCount = roomsRepository.countMembersByRoomId(room.getId());
+            return new RoomResponse(
+                    room.getId(),
+                    room.getName(),
+                    room.getCode(),
+                    room.getMaxMembers(),
+                    room.getCreator().getUsername(),
+                    memberCount.intValue(),
+                    room.getPasswordHash() != null && !room.getPasswordHash().isBlank());
+        }).toList();
+        return new RoomSearchResponse(rooms, page, size, roomsPage.getTotalElements());
+    }
 }
