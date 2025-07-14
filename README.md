@@ -17,8 +17,7 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
     - [Chat Messaging (Text, Image, Video)](#chat-messaging-text-image-video)
     - [Room Management](#room-management)
     - [User Profile & Settings](#user-profile--settings)
-5. [Screenshots](#screenshots)
-6. [Developer Info](#developer-info)
+5. [Developer Info](#developer-info)
 
 ---
 
@@ -39,7 +38,7 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 - **WebSocket**: Native WebSocket with STOMP for real-time messaging
 - **REST APIs**: For user, room, and message management
 - **Media Upload**: REST endpoint for image/video upload, static resource serving
-- **Database**: (Describe your DB, e.g., MySQL/PostgreSQL/MongoDB)
+- **Database**: PostgreSQL
 
 ---
 
@@ -53,12 +52,16 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 ---
 
 ## Main Functionalities
+![z6803958949361_3354e8377169e1fd923c3e7f43dac6f4](https://github.com/user-attachments/assets/93d5478d-c9e1-4cab-a5b6-c42beba9b352)
+![z6803958949362_23cac63807029ae4ca8a4ac41c85e13f](https://github.com/user-attachments/assets/ebd6aa80-5cc7-4802-958a-d5a60b0cd90a)
+
 
 ### 1. User Registration
 - Users can sign up with username, email, and password.
 - Validation and error handling for user-friendly experience.
 
-**[Insert registration screenshot here]**
+![z6803958901656_0bed6002e990c3adb83a406033b2b3e9](https://github.com/user-attachments/assets/af03aa7a-0a80-4cb9-b763-59a2af39e661)
+
 
 ---
 
@@ -66,7 +69,8 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 - Secure login with JWT authentication.
 - Redirects to chat rooms upon successful login.
 
-**[Insert login screenshot here]**
+![z6803958949364_c1b1f9bb9417b37ca3176e60deca97aa](https://github.com/user-attachments/assets/865f1cb3-20e4-429b-bfe9-9ad9ecd32e9b)
+
 
 ---
 
@@ -74,7 +78,8 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 - Users can create new chat rooms (public or private with password).
 - Set room name, password (optional), and max members.
 
-**[Insert create room screenshot here]**
+![z6803959109816_3fda45294cc25ad311dfed001ff57916](https://github.com/user-attachments/assets/49674b5a-afa7-4521-b4f2-7e8e52234200)
+
 
 ---
 
@@ -84,7 +89,9 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 - Join rooms directly or via password (for private rooms).
 - Pagination for efficient browsing.
 
-**[Insert room search/join screenshot here]**
+![z6803959154866_bfa350d543089b969f8374910cfd9745](https://github.com/user-attachments/assets/aa88833d-90c7-497e-9088-3555c7891b3c)
+![z6804012153773_a0d767d5fe21906ada22a165a1369955](https://github.com/user-attachments/assets/c34b792a-e2cd-4d6e-ae4f-1d9fad5d47b1)
+
 
 ---
 
@@ -94,36 +101,39 @@ ChatApp is a modern real-time chat application built with Next.js 15 (frontend) 
 - Media is displayed inline in the chat.
 - Optimistic UI for instant feedback.
 
-**[Insert chat with media screenshot here]**
+![z6803995275121_99470bbc6799c0b3c4226d55cea84645](https://github.com/user-attachments/assets/0d4e58bf-632c-4d32-8b1b-f431870895af)
+![z6803995224271_f82fd3f3a4d2b4365da32afe847cb058](https://github.com/user-attachments/assets/7282b94c-fcb7-4933-a42c-2f342bd365b0)
+
 
 ---
 
 ### 6. Room Management
 - "Your Rooms": List of rooms the user has joined.
 - "Own Rooms": List of rooms the user created (owner).
-- Room owners can delete rooms and manage (kick) members.
 - Member list and management modal for each room.
 
-**[Insert room management screenshot here]**
+![z6803959065737_02146d9c7fb58e41d09dd31e4f1048bc](https://github.com/user-attachments/assets/255a8a75-2d7a-40c1-96b1-2e5021e0c4c9)
+![z6803959025824_b5754eee40471bd78dd44f1bc72ae816](https://github.com/user-attachments/assets/21711cc4-c38b-4f0c-a724-7bc9d0cb6441)
+![z6803958901679_48fa0d3fae0eba37a92495f7738f1820](https://github.com/user-attachments/assets/b77b93c0-1be4-4f52-8c0d-73fbfffc6b4b)
+
+- Room owners can delete rooms and manage (kick) members.
+  
+![z6803959410995_8f1e797de2a27a96a9dddbf073b1bd7e](https://github.com/user-attachments/assets/21a4c3e4-79af-4381-93e0-29543583eed9)
+![z6803959289612_f1de3820e93682a992bb4f49b17b65bc](https://github.com/user-attachments/assets/f068ea9e-a5df-4d16-a67d-60640a2d1451)
 
 ---
 
 ### 7. User Profile & Settings
 - View and update user profile (avatar, username, email, password).
 - Theme toggle (dark/light mode).
+  
+![z6803959237992_d325cabf0c44a43108ce83b06bad22fa](https://github.com/user-attachments/assets/094fe949-9f44-4fa0-b069-271b7ff01127)
 
-**[Insert profile/settings screenshot here]**
-
----
-
-## Screenshots
-- Please see the above sections for placeholders to insert actual screenshots of each feature.
 
 ---
 
 ## Developer Info
 - **Author**: Nguyễn Vũ Hiệp
-- **Phone**: 0789388656
 - **Tech Stack**: Next.js 15, TypeScript, Tailwind CSS, shadcn/ui, Spring Boot, WebSocket, JWT
 
 ---
