@@ -6,7 +6,7 @@ import { roomApi, Room } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { RoomCard } from '@/components/RoomCard';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
 export default function UserRoomsPage() {
@@ -14,14 +14,19 @@ export default function UserRoomsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const router = useRouter();
+    const [filter, setFilter] = useState<'all' | 'private' | 'public'>('all');
+    const [page, setPage] = useState(0);
+    const [size] = useState(16);
+    const [total, setTotal] = useState(0);
 
     const fetchPersonalRooms = async () => {
         setLoading(true);
         setError('');
         try {
-            const res = await roomApi.getUserRooms();
+            const res = await roomApi.getUserRooms(page, size);
             if (res.result === 'SUCCESS' && res.data) {
-                setPersonalRooms(res.data);
+                setPersonalRooms(res.data.rooms);
+                setTotal(res.data.totalElements);
             } else {
                 setError(res.message || 'Failed to fetch your rooms');
             }
@@ -34,14 +39,14 @@ export default function UserRoomsPage() {
 
     useEffect(() => {
         fetchPersonalRooms();
-    }, []);
+    }, [page, size, filter]);
 
     const handleRoomClick = (room: Room) => {
         router.push(`/chat/${room.id}`);
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="container mx-auto px-4 py-8 max-w-5xl xl:max-w-7xl">
             {/* Header */}
             <div className="flex items-center gap-4 mb-6">
                 <Link href="/rooms">
@@ -56,7 +61,27 @@ export default function UserRoomsPage() {
                     <p className="text-muted-foreground">Rooms you've created or joined</p>
                 </div>
             </div>
-
+            {/* Filter Buttons */}
+            <div className="flex gap-2 mb-6">
+                <Button
+                    variant={filter === 'all' ? 'default' : 'outline'}
+                    onClick={() => setFilter('all')}
+                >
+                    All
+                </Button>
+                <Button
+                    variant={filter === 'private' ? 'default' : 'outline'}
+                    onClick={() => setFilter('private')}
+                >
+                    Private
+                </Button>
+                <Button
+                    variant={filter === 'public' ? 'default' : 'outline'}
+                    onClick={() => setFilter('public')}
+                >
+                    Public
+                </Button>
+            </div>
             {/* Content */}
             {loading ? (
                 <div className="text-center py-8">
@@ -84,16 +109,32 @@ export default function UserRoomsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="grid gap-4">
-                    {personalRooms.map(room => (
-                        <RoomCard
-                            key={room.id}
-                            room={room}
-                            isJoined
-                            onClick={handleRoomClick}
-                        />
-                    ))}
-                </div>
+                <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                        {personalRooms
+                            .filter(room =>
+                                filter === 'all'
+                                    ? true
+                                    : filter === 'private'
+                                        ? room.hasPassword
+                                        : !room.hasPassword
+                            )
+                            .map(room => (
+                                <RoomCard
+                                    key={room.id}
+                                    room={room}
+                                    isJoined
+                                    onClick={handleRoomClick}
+                                />
+                            ))}
+                    </div>
+                    {/* Pagination */}
+                    <div className="flex items-center justify-center gap-2 mt-2">
+                        <Button variant="outline" size="icon" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}><ChevronLeft className="h-4 w-4" /></Button>
+                        <span className="text-sm">Page {page + 1} / {Math.max(1, Math.ceil(total / size))}</span>
+                        <Button variant="outline" size="icon" onClick={() => setPage(p => p + 1)} disabled={(page + 1) * size >= total}><ChevronRight className="h-4 w-4" /></Button>
+                    </div>
+                </>
             )}
         </div>
     );

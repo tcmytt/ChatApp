@@ -99,11 +99,24 @@ public class RoomController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<ApiResponse<List<RoomResponse>>> getUserRooms() {
+    public ResponseEntity<ApiResponse<RoomSearchResponse>> getUserRooms(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "16") int size) {
         try {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
-            List<RoomResponse> rooms = roomService.getUserRooms(email);
-            return ResponseEntity.ok(ApiResponse.success("User rooms fetched successfully", rooms));
+            RoomSearchResponse result = roomService.getUserRooms(email, page, size);
+            return ResponseEntity.ok(ApiResponse.success("User rooms fetched successfully", result));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/user/ids")
+    public ResponseEntity<ApiResponse<List<Long>>> getUserRoomIds() {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            List<Long> roomIds = roomService.getUserRoomIds(email);
+            return ResponseEntity.ok(ApiResponse.success("User room IDs fetched successfully", roomIds));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }

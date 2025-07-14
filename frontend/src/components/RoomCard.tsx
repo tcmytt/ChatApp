@@ -26,10 +26,10 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
 
     return (
         <Card
-            className={`transition-shadow hover:shadow-lg cursor-pointer border-2 ${isJoined ? 'border-blue-500' : 'border-transparent'}`}
+            className={`transition-shadow hover:shadow-xl cursor-pointer border-2 ${isJoined ? 'border-blue-500' : 'border-transparent'} rounded-2xl bg-white/90 dark:bg-gray-900/80 shadow-md hover:-translate-y-1 duration-200 w-full min-w-[220px] max-w-full`}
             onClick={() => onClick?.(room)}
         >
-            <CardContent className="p-4 flex flex-col gap-2">
+            <CardContent className="p-6 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                     <div className="font-bold text-lg truncate">
                         {room.name}
@@ -49,7 +49,7 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
                         Code copied to clipboard!
                     </div>
                 )}
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
                     <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
                         {room.memberCount}/{room.maxMembers}
@@ -59,7 +59,7 @@ export function RoomCard({ room, onClick, isJoined }: RoomCardProps) {
                         {room.creatorUsername}
                     </span>
                     {room.hasPassword && (
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-pink-500">
                             <Key className="h-4 w-4" />
                             Private
                         </span>

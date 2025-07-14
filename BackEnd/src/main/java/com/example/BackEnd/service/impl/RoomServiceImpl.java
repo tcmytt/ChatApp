@@ -231,20 +231,21 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoomResponse> getUserRooms(String userEmail) {
+    public RoomSearchResponse getUserRooms(String userEmail, int page, int size) {
         Users user = usersRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Lấy tất cả phòng mà user đã tham gia (bao gồm phòng tự tạo và phòng đã join)
         List<RoomMembers> userRoomMembers = roomMembersRepository.findByUserId(user.getId());
-
-        // Sắp xếp theo thời gian tham gia mới nhất
         userRoomMembers.sort((rm1, rm2) -> rm2.getJoinedAt().compareTo(rm1.getJoinedAt()));
 
-        return userRoomMembers.stream().map(rm -> {
+        int totalElements = userRoomMembers.size();
+        int fromIndex = Math.min(page * size, totalElements);
+        int toIndex = Math.min(fromIndex + size, totalElements);
+        List<RoomMembers> pagedRoomMembers = userRoomMembers.subList(fromIndex, toIndex);
+
+        List<RoomResponse> rooms = pagedRoomMembers.stream().map(rm -> {
             Rooms room = rm.getRoom();
             Long memberCount = roomsRepository.countMembersByRoomId(room.getId());
-
             return new RoomResponse(
                     room.getId(),
                     room.getName(),
@@ -254,5 +255,16 @@ public class RoomServiceImpl implements RoomService {
                     memberCount.intValue(),
                     room.getPasswordHash() != null && !room.getPasswordHash().isBlank());
         }).toList();
+
+        return new RoomSearchResponse(rooms, page, size, totalElements);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> getUserRoomIds(String userEmail) {
+        Users user = usersRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<RoomMembers> userRoomMembers = roomMembersRepository.findByUserId(user.getId());
+        return userRoomMembers.stream().map(rm -> rm.getRoom().getId()).toList();
     }
 }

@@ -27,9 +27,10 @@ export default function RoomsPage() {
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [filter, setFilter] = useState<'all' | 'private' | 'public'>('all');
 
     // TODO: Replace with real user joined/created rooms from API
-    const [personalRooms, setPersonalRooms] = useState<Room[]>([]);
+    const [userRoomIds, setUserRoomIds] = useState<number[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [modalType, setModalType] = useState<'password' | 'confirm' | null>(null);
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -57,22 +58,20 @@ export default function RoomsPage() {
         }
     };
 
-    const fetchPersonalRooms = async () => {
+    const fetchUserRoomIds = async () => {
         try {
-            const res = await roomApi.getUserRooms();
-            if (res.result === 'SUCCESS' && res.data) {
-                setPersonalRooms(res.data);
-            } else {
-                console.error('Failed to fetch personal rooms:', res.message);
+            const res = await roomApi.getUserRoomIds();
+            if (res.result === 'SUCCESS' && Array.isArray(res.data)) {
+                setUserRoomIds(res.data);
             }
         } catch (err) {
-            console.error('Failed to fetch personal rooms:', err);
+            console.error('Failed to fetch user room ids:', err);
         }
     };
 
     useEffect(() => {
         fetchRooms();
-        fetchPersonalRooms();
+        fetchUserRoomIds();
     }, [query, page]);
 
     const handleSearch = (e: React.FormEvent) => {
@@ -82,7 +81,7 @@ export default function RoomsPage() {
     };
 
     const handleRoomClick = (room: Room) => {
-        const isJoined = personalRooms.some(r => r.id === room.id);
+        const isJoined = userRoomIds.includes(room.id);
         setSelectedRoom(room);
         setModalError('');
         setPassword('');
@@ -111,7 +110,7 @@ export default function RoomsPage() {
             if (res.result === 'SUCCESS' && res.data) {
                 setShowModal(false);
                 // Refresh personal rooms after joining
-                await fetchPersonalRooms();
+                await fetchUserRoomIds();
                 router.push(`/chat/${selectedRoom.id}`);
             } else {
                 setModalError(res.message || 'Failed to join room');
@@ -124,7 +123,7 @@ export default function RoomsPage() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="container mx-auto px-4 py-8 max-w-5xl xl:max-w-7xl">
             <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">Rooms</h1>
             {/* Search */}
             <form onSubmit={handleSearch} className="flex gap-2 mb-6">
@@ -136,6 +135,27 @@ export default function RoomsPage() {
                 />
                 <Button type="submit" variant="outline"><Search className="h-4 w-4" /></Button>
             </form>
+            {/* Filter Buttons */}
+            <div className="flex gap-2 mb-6">
+                <Button
+                    variant={filter === 'all' ? 'default' : 'outline'}
+                    onClick={() => setFilter('all')}
+                >
+                    All
+                </Button>
+                <Button
+                    variant={filter === 'private' ? 'default' : 'outline'}
+                    onClick={() => setFilter('private')}
+                >
+                    Private
+                </Button>
+                <Button
+                    variant={filter === 'public' ? 'default' : 'outline'}
+                    onClick={() => setFilter('public')}
+                >
+                    Public
+                </Button>
+            </div>
             {/* Public Rooms */}
             <div>
                 <h2 className="text-lg font-semibold mb-2">Public Rooms</h2>
@@ -146,10 +166,18 @@ export default function RoomsPage() {
                 ) : rooms.length === 0 ? (
                     <div className="text-muted-foreground">No rooms found.</div>
                 ) : (
-                    <div className="grid gap-4">
-                        {rooms.map(room => (
-                            <RoomCard key={room.id} room={room} onClick={handleRoomClick} />
-                        ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {rooms
+                            .filter(room =>
+                                filter === 'all'
+                                    ? true
+                                    : filter === 'private'
+                                        ? room.hasPassword
+                                        : !room.hasPassword
+                            )
+                            .map(room => (
+                                <RoomCard key={room.id} room={room} onClick={handleRoomClick} />
+                            ))}
                     </div>
                 )}
                 {/* Pagination */}

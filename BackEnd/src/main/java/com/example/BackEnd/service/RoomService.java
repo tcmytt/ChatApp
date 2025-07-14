@@ -18,5 +18,7 @@ public interface RoomService {
 
     RoomResponse getRoomById(String userEmail, Long roomId);
 
-    List<RoomResponse> getUserRooms(String userEmail);
+    RoomSearchResponse getUserRooms(String userEmail, int page, int size);
+
+    List<Long> getUserRoomIds(String userEmail);
 }

@@ -130,6 +130,13 @@ export interface RoomSearchResponse {
     totalElements: number;
 }
 
+export interface UserRoomsResponse {
+    rooms: Room[];
+    page: number;
+    size: number;
+    totalElements: number;
+}
+
 export const roomApi = {
     // Create room
     createRoom: async (data: CreateRoomRequest): Promise<ApiResponse<Room>> => {
@@ -149,8 +156,10 @@ export const roomApi = {
         return response.data;
     },
     // Get user's joined rooms
-    getUserRooms: async (): Promise<ApiResponse<Room[]>> => {
-        const response = await api.get<ApiResponse<Room[]>>('/api/rooms/user');
+    getUserRooms: async (page = 0, size = 16): Promise<ApiResponse<UserRoomsResponse>> => {
+        const response = await api.get<ApiResponse<UserRoomsResponse>>('/api/rooms/user', {
+            params: { page, size },
+        });
         return response.data;
     },
     // Delete room
@@ -161,6 +170,10 @@ export const roomApi = {
     // Kick member
     kickMember: async (roomId: number, userId: number): Promise<ApiResponse<null>> => {
         const response = await api.post<ApiResponse<null>>(`/api/rooms/kick?roomId=${roomId}&userId=${userId}`);
+        return response.data;
+    },
+    getUserRoomIds: async (): Promise<ApiResponse<number[]>> => {
+        const response = await api.get<ApiResponse<number[]>>('/api/rooms/user/ids');
         return response.data;
     },
 };
